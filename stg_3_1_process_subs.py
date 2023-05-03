@@ -100,7 +100,7 @@ def process_sub_info(channel_name:str, channel_date:str = get_date.get_four_digi
     print(insert_df.head())
 
     # Save the data to database
-    dbengine = save_to_snowflake.set_up_engine(snowflake_schema='twitch_data',snowflake_database='stream_data_anal',snowflake_user='kimkim',snowflake_password='Evlngood2!', snowflake_account='MNB68659.us-west-2',snowflake_wh='compute_wh', snowflake_role="accountadmin")
+    dbengine = save_to_snowflake.set_up_engine(snowflake_schema='twitch_data',snowflake_database='stream_data_anal',snowflake_user=SNOWFLAKE_USER,snowflake_password=SNOWFLAKE_PW, snowflake_account='MNB68659.us-west-2',snowflake_wh='compute_wh', snowflake_role="accountadmin")
     insert_df.to_sql(name="subscription_info",con=dbengine, if_exists="append", index=False)
     
     # mark the data as processed
@@ -114,5 +114,5 @@ def process_sub_info(channel_name:str, channel_date:str = get_date.get_four_digi
     
     return True 
 
-process_sub_info(channel_name="amouranth", channel_date="0423")
+
 

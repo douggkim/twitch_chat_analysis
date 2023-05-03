@@ -3,8 +3,9 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago 
 from stg_1_get_channel_name import get_channel_name
-from stg_2_1_sentiment_analysis import sentiment_analysis 
-from stg_2_process_subs import process_sub_info
+from stg_2_get_streamer_emojis import get_emoji_set
+from stg_3_sentiment_analysis import sentiment_analysis 
+from stg_3_1_process_subs import process_sub_info
 from airflow.models import Variable
 import get_date
 
@@ -30,11 +31,15 @@ dag = DAG(
 )
 
 
-
-
 dag_setup = PythonOperator(
     task_id = 'get_channel_name',
     python_callable=get_channel_name,
+)
+
+get_emoji_set_task = PythonOperator(
+    task_id = 'get_channel_name',
+    python_callable=get_emoji_set,
+    op_kwargs={'channel_name': dag_setup.output},
 )
 
 process_sub_info_task = PythonOperator(
@@ -53,4 +58,4 @@ sentiment_analysis_task = PythonOperator(
 
 
 # Set up the pipeline and run other tasks simultaneously
-dag_setup>>[sentiment_analysis_task,process_sub_info_task]
+dag_setup>>get_emoji_set_task>>[sentiment_analysis_task,process_sub_info_task]
