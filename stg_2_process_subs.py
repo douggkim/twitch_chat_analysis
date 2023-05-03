@@ -1,4 +1,4 @@
-import save_to_snowflake
+import save_to_snowflake, get_date
 import pandas as pd
 import re 
 import os
@@ -6,6 +6,10 @@ import os
 
 # define support functions
 def extract_gift_info(text:str):
+    """
+    Get the users and the subscription gift amount out of the chats 
+    text: the chat content 
+    """
     # compare with the general pattern
     match1 = re.search(r'(\w+) just gifted (\d+) subs!', text)
     if match1:
@@ -27,6 +31,10 @@ def extract_gift_info(text:str):
         return username, num_subs
 
 def extract_resub(text:str): 
+    """
+    Get the users and the resubscription amount out of the chats 
+    text: the chat content 
+    """
     # Extract username
     username_pattern = r'^(\w+)'
     username_match = re.search(username_pattern, text)
@@ -46,7 +54,12 @@ def extract_resub(text:str):
         num_subs = int(sub_match.group(1))
         return username, num_subs
 
-def process_sub_info(channel_name:str, channel_date:str) -> None : 
+def process_sub_info(channel_name:str, channel_date:str = get_date.get_four_digit_date()) -> None : 
+    """
+    Filter the chats that are not processed and get the subscription amounts out of the chats
+    channel_name: the channel that you want to analyze
+    channel_date: the four digit date of today (ex.2023/04/23 -> 0423). Default value is today. 
+    """
     SNOWFLAKE_USER = os.environ["SNOWFLAKE_USER"]
     SNOWFLAKE_PW = os.environ["SNOWFLAKE_PW"]
 

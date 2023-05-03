@@ -6,6 +6,9 @@ import save_to_snowflake
 import json, os 
 import threading
 import requests
+from airflow.models import DAG, DagRun
+from airflow.utils.types import DagRunType
+import datetime
 
 # Set up authorization parameters
 CLIENT_ID = os.environ["TWITCH_CLIENT_ID"]
@@ -49,6 +52,17 @@ yy_mm = get_date.get_four_digit_date()
 s.send(f"PASS {PASS}\r\n".encode("utf-8"))
 s.send(f"NICK {NICK}\r\n".encode("utf-8"))
 s.send(f"JOIN #{CHANNEL}\r\n".encode("utf-8"))
+
+# Define the dag we will run 
+dag_id = "twitch_real_time_analysis"
+# Define the DAG object
+dag = DAG(dag_id=dag_id, start_date=datetime.now())
+
+# Trigger the DAG using DagRun and pass the channel name as the parameter
+DagRun.schedule_dag(dag_id=dag_id, execution_date=datetime.now(), run_type=DagRunType.MANUAL, conf={'channel_name': CHANNEL})
+
+
+
 
 # Start receiving and processing chat messages
 # Use regex to parse messages
