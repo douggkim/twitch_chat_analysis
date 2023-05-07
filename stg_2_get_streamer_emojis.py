@@ -1,8 +1,8 @@
 import requests
 import pandas as pd 
 import json 
-
-
+import save_to_snowflake
+import os 
 
 def get_emoji_set(channel_name:str) -> None: 
     """
@@ -70,7 +70,7 @@ def get_emoji_set(channel_name:str) -> None:
 
 
     # Extract the user ID from the response
-    data = response.json().get('data')
+    channel_id = response.json().get('data')[0]["id"]
 
     # Set up the API endpoint URL and your Twitch API access token
     url = 'https://api.twitch.tv/helix/chat/emotes'
@@ -91,4 +91,7 @@ def get_emoji_set(channel_name:str) -> None:
 
     # Save the data to database
     dbengine = save_to_snowflake.set_up_engine(snowflake_schema='twitch_data',snowflake_database='stream_data_anal',snowflake_user=SNOWFLAKE_USER ,snowflake_password=SNOWFLAKE_PW, snowflake_account='MNB68659.us-west-2',snowflake_wh='compute_wh', snowflake_role="accountadmin")
-    emoji_df.to_sql(name="emojis",con=dbengine, if_exists="append", index=False)
+    emoji_df.to_sql(name="emojis",con=dbengine, if_exists="replace", index=False)
+
+
+get_emoji_set(channel_name="amouranth")
