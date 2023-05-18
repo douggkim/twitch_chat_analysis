@@ -57,7 +57,6 @@ s.send(f"JOIN #{CHANNEL}\r\n".encode("utf-8"))
 dag_id = "twitch_real_time_analysis"
 # Define the DAG object
 dag = DAG(dag_id=dag_id, start_date=datetime.now())
-
 # Trigger the DAG using DagRun and pass the channel name as the parameter
 DagRun.schedule_dag(dag_id=dag_id, execution_date=datetime.now(), run_type=DagRunType.MANUAL, conf={'channel_name': CHANNEL})
 
