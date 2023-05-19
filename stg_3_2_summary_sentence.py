@@ -38,7 +38,7 @@ def summarize_comment(channel_name:str, query_date=datetime.now())-> str:
     query_date: the starting date of the chats
     """
     to_date = query_date.strftime("%Y-%m-%d %H:%M")
-    from_date = (query_date + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
+    from_date = (query_date - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
 
     #set up snowflake connecection 
     conn = snowflake.connector.connect(

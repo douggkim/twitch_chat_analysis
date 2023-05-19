@@ -36,8 +36,8 @@ def count_words(query_date:datetime, channel_name:str, yy_mm:str=get_date.get_fo
         schema = 'twitch_data')
     
     # Read data for last five minutes 
-    from_date = query_date.strftime("%Y-%m-%d %H:%M")
-    to_date = (query_date + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
+    to_date = query_date.strftime("%Y-%m-%d %H:%M")
+    from_date = (query_date - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
     
     # Get the chat data 
     query = f"SELECT * from twitch_chats WHERE CHANNEL_NAME = '{channel_name}' AND CHANNEL_DATE = '{yy_mm}' AND message_date BETWEEN '{from_date}' and '{to_date}'"
