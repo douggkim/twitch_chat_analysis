@@ -37,8 +37,8 @@ def summarize_comment(channel_name:str, query_date=datetime.now())-> str:
     channel_name: name of the streamer to be analyzed (passed on from the airflow function)
     query_date: the starting date of the chats
     """
-    from_date = query_date.strftime("%Y-%m-%d %H:%M")
-    to_date = (query_date + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
+    to_date = query_date.strftime("%Y-%m-%d %H:%M")
+    from_date = (query_date + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
 
     #set up snowflake connecection 
     conn = snowflake.connector.connect(

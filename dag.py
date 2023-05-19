@@ -6,6 +6,8 @@ from stg_1_get_channel_name import get_channel_name
 from stg_2_get_streamer_emojis import get_emoji_set
 from stg_3_sentiment_analysis import sentiment_analysis 
 from stg_3_1_process_subs import process_sub_info
+from stg_3_2_summary_sentence import summarize_comment
+from stg_3_4_word_cloud_generation import count_words
 from airflow.models import Variable
 import get_date
 
@@ -56,6 +58,20 @@ sentiment_analysis_task = PythonOperator(
     dag = dag
 )
 
+sentence_summary_task = PythonOperator(
+    task_id = 'sentence_summary',
+    python_callable=summarize_comment,
+    op_kwargs={'channel_name': dag_setup.output, 'query_date': datetime.now() },
+    dag = dag
+)
+
+word_cloud_task = PythonOperator(
+    task_id = 'word_cloud_generation',
+    python_callable=count_words,
+    op_kwargs={'channel_name': dag_setup.output, 'query_date':datetime.now(),'yy_mm': get_date.get_four_digit_date()},
+    dag = dag
+)
+
 
 # Set up the pipeline and run other tasks simultaneously
-dag_setup>>get_emoji_set_task>>[sentiment_analysis_task,process_sub_info_task]
+dag_setup>>get_emoji_set_task>>[sentiment_analysis_task,process_sub_info_task, sentence_summary_task, word_cloud_task]

@@ -2,7 +2,7 @@ import save_to_snowflake, get_date
 import pandas as pd
 import re 
 import os
-
+from datetime import datetime, timedelta
 
 # define support functions
 def extract_gift_info(text:str):
@@ -54,7 +54,7 @@ def extract_resub(text:str):
         num_subs = int(sub_match.group(1))
         return username, num_subs
 
-def process_sub_info(channel_name:str, channel_date:str = get_date.get_four_digit_date()) -> None : 
+def process_sub_info(channel_name:str, query_date:datetime, channel_date:str = get_date.get_four_digit_date()) -> None : 
     """
     Filter the chats that are not processed and get the subscription amounts out of the chats
     channel_name: the channel that you want to analyze
@@ -62,11 +62,14 @@ def process_sub_info(channel_name:str, channel_date:str = get_date.get_four_digi
     """
     SNOWFLAKE_USER = os.environ["SNOWFLAKE_USER"]
     SNOWFLAKE_PW = os.environ["SNOWFLAKE_PW"]
+    to_date = query_date.strftime("%Y-%m-%d %H:%M")
+    from_date = (query_date - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
 
     conn, cur = save_to_snowflake.set_up_conn(snowflake_schema='twitch_data',snowflake_database='stream_data_anal',snowflake_user=SNOWFLAKE_USER,snowflake_password=SNOWFLAKE_PW, snowflake_account='MNB68659.us-west-2',snowflake_wh='compute_wh')
 
     # Get the gift data 
-    gift_query = f"SELECT * FROM twitch_chats WHERE channel_name='{channel_name}' AND channel_date='{channel_date}' AND lower(message_text) LIKE '%gifted%' AND message_author like '%bot' AND sub_processed = FALSE"
+    gift_query = f"SELECT * FROM twitch_chats WHERE channel_name='{channel_name}' AND channel_date='{channel_date}' AND lower(message_text) LIKE '%gifted%' AND\
+        message_author like '%bot' AND sub_processed = FALSE AND message_date >= '{from_date}' AND message_date <= '{to_date}'"
     gift_data = cur.execute(gift_query).fetchall()
     gift_df = pd.DataFrame(gift_data)
 
@@ -80,7 +83,8 @@ def process_sub_info(channel_name:str, channel_date:str = get_date.get_four_digi
     gift_result_df["sub_type"] = "gift"
 
     # Get the resub data 
-    sub_query = f"SELECT * FROM twitch_chats WHERE channel_name='{channel_name}' AND channel_date='{channel_date}' AND lower(message_text) LIKE '%month%' AND message_author like '%bot' AND sub_processed = FALSE"
+    sub_query = f"SELECT * FROM twitch_chats WHERE channel_name='{channel_name}' AND channel_date='{channel_date}' AND lower(message_text) LIKE '%month%' AND\
+        message_author like '%bot' AND sub_processed = FALSE AND message_date >= '{from_date}' AND message_date <= '{to_date}'"
     resub_data = cur.execute(sub_query).fetchall()
     resub_df = pd.DataFrame(resub_data)
 
@@ -96,8 +100,6 @@ def process_sub_info(channel_name:str, channel_date:str = get_date.get_four_digi
     # Prepare the insert data 
     insert_df = pd.concat([resub_result_df, gift_result_df], axis=0)
     insert_df['message_date'] = insert_df['message_date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    # insert_df['message_date'] = pd.to_datetime(insert_df['message_date'])
-    print(insert_df.head())
 
     # Save the data to database
     dbengine = save_to_snowflake.set_up_engine(snowflake_schema='twitch_data',snowflake_database='stream_data_anal',snowflake_user=SNOWFLAKE_USER,snowflake_password=SNOWFLAKE_PW, snowflake_account='MNB68659.us-west-2',snowflake_wh='compute_wh', snowflake_role="accountadmin")
