@@ -54,11 +54,13 @@ def extract_resub(text:str):
         num_subs = int(sub_match.group(1))
         return username, num_subs
 
-def process_sub_info(channel_name:str, query_date:datetime, channel_date:str = get_date.get_four_digit_date()) -> None : 
+def process_sub_info(channel_name:str, query_date= datetime.now(), channel_date:str = get_date.get_four_digit_date()) -> None : 
     """
     Filter the chats that are not processed and get the subscription amounts out of the chats
-    channel_name: the channel that you want to analyze
-    channel_date: the four digit date of today (ex.2023/04/23 -> 0423). Default value is today. 
+    Args: 
+        channel_name: the channel that you want to analyze
+        channel_date: the four digit date of today (ex.2023/04/23 -> 0423). Default value is today. 
+        query_date: get the date to query the data with 
     """
     SNOWFLAKE_USER = os.environ["SNOWFLAKE_USER"]
     SNOWFLAKE_PW = os.environ["SNOWFLAKE_PW"]
@@ -115,6 +117,5 @@ def process_sub_info(channel_name:str, query_date:datetime, channel_date:str = g
     conn.close() 
     
     return True 
-
 
 

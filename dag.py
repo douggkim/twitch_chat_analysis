@@ -25,6 +25,7 @@ default_args = {
 dag = DAG(
     "twitch_real_time_analysis", 
     default_args = default_args,
+    start_date=datetime(2023, 5, 1),
     # Every 5 minutes
     # schedule_interval='*/5 * * * *',
     # Do not run all the tasks that were not ran since the starting date 
@@ -36,12 +37,14 @@ dag = DAG(
 dag_setup = PythonOperator(
     task_id = 'get_channel_name',
     python_callable=get_channel_name,
+    dag=dag
 )
 
 get_emoji_set_task = PythonOperator(
-    task_id = 'get_channel_name',
+    task_id = 'get_emoji_set',
     python_callable=get_emoji_set,
     op_kwargs={'channel_name': dag_setup.output},
+    dag=dag
 )
 
 process_sub_info_task = PythonOperator(
